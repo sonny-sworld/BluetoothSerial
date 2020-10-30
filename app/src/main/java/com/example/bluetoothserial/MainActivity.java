@@ -36,10 +36,8 @@ public class MainActivity extends Activity
     BluetoothDevice mmDevice;
     OutputStream mmOutputStream;
     InputStream mmInputStream;
-    Thread workerThread;
     byte[] readBuffer;
     int readBufferPosition;
-    int counter;
     volatile boolean stopWorker;
 
     @Override
@@ -60,12 +58,8 @@ public class MainActivity extends Activity
             @Override
             public void onClick(View v)
             {
-
                     findBT();
                     openBT();
-//                Intent intent = new Intent(MainActivity.this, MicrochipIntentService.class);
-//                startService(intent);
-
             }
         });
 
@@ -129,9 +123,9 @@ public class MainActivity extends Activity
         myLabel.setText("Bluetooth Device Found");
     }
 
-    void openBT()
-    {
-        UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); //Standard SerialPortService ID
+    void openBT() {
+        //Standard SerialPortService ID
+        UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
         try {
             mmSocket = mmDevice.createRfcommSocketToServiceRecord(uuid);
 
