@@ -153,11 +153,10 @@ public class MainActivity extends Activity
     }
     Handler handler = new Handler();
 
-
+    ScheduledExecutorService executorService;
     void beginListenForData() {
         stopWorker = false;
-        ScheduledExecutorService executorService =
-                new ScheduledThreadPoolExecutor(1, new BasicThreadFactory.Builder().namingPattern("schedule-pool-%d").daemon(true).build());
+        executorService = new ScheduledThreadPoolExecutor(1, new BasicThreadFactory.Builder().namingPattern("schedule-pool-%d").daemon(true).build());
         executorService.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
@@ -192,62 +191,6 @@ public class MainActivity extends Activity
             stopWorker = true;
         }
     }
-    void beginListenForData02()
-    {
-        final Handler handler = new Handler();
-        final byte delimiter = 10; //This is the ASCII code for a newline character
-
-        stopWorker = false;
-        readBufferPosition = 0;
-        readBuffer = new byte[1024];
-        workerThread = new Thread(new Runnable()
-        {
-            public void run()
-            {
-                while(!Thread.currentThread().isInterrupted() && !stopWorker)
-                {
-                    try
-                    {
-                        int bytesAvailable = mmInputStream.available();
-                        if(bytesAvailable > 0)
-                        {
-                            byte[] packetBytes = new byte[bytesAvailable];
-                            mmInputStream.read(packetBytes);
-                            for(int i=0;i<bytesAvailable;i++)
-                            {
-                                byte b = packetBytes[i];
-                                if(b == delimiter)
-                                {
-                                    byte[] encodedBytes = new byte[readBufferPosition];
-                                    System.arraycopy(readBuffer, 0, encodedBytes, 0, encodedBytes.length);
-                                    final String data = new String(encodedBytes, "US-ASCII");
-                                    readBufferPosition = 0;
-
-                                    handler.post(new Runnable()
-                                    {
-                                        public void run()
-                                        {
-                                            myLabel.setText(data);
-                                        }
-                                    });
-                                }
-                                else
-                                {
-                                    readBuffer[readBufferPosition++] = b;
-                                }
-                            }
-                        }
-                    }
-                    catch (IOException ex)
-                    {
-                        stopWorker = true;
-                    }
-                }
-            }
-        });
-
-        workerThread.start();
-    }
 
     void sendData() throws IOException
     {
@@ -257,16 +200,24 @@ public class MainActivity extends Activity
         myLabel.setText("Data Sent");
     }
 
-    void closeBT() throws IOException
-    {
+    void closeBT() throws IOException {
         stopWorker = true;
-        mmOutputStream.close();
-        mmOutputStream = null;
-        mmInputStream.close();
+        if (mmOutputStream != null) {
+            mmOutputStream.close();
+        }
+        if (mmInputStream != null) {
+            mmInputStream.close();
+        }
+        if (mmSocket != null) {
+            mmSocket.close();
+        }
+        myLabel.setText("Bluetooth Closed");
+        if(executorService!=null) {
+            executorService.shutdown();
+        }
         mmInputStream = null;
-        mmSocket.close();
         mmSocket = null;
         mBluetoothAdapter = null;
-        myLabel.setText("Bluetooth Closed");
+        mmOutputStream = null;
     }
 }
