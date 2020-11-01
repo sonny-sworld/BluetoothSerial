@@ -51,7 +51,7 @@ public class BluetoothChatService {
 //	 private static final UUID MY_UUID =
 //	 UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a66");
 	private static final UUID MY_UUID = UUID
-			.fromString("00001101-0000-1000-8000-00805f9b34fb");
+			.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
 	// Member fields
 	private final BluetoothAdapter mAdapter;
@@ -314,8 +314,7 @@ public class BluetoothChatService {
 
 			// Create a new listening server socket
 			try {
-//				tmp = mAdapter
-//						.listenUsingRfcommWithServiceRecord(NAME, MY_UUID);
+//				tmp = mAdapter.listenUsingRfcommWithServiceRecord(NAME, MY_UUID);
 				tmp = mAdapter.listenUsingInsecureRfcommWithServiceRecord(NAME, MY_UUID);
 			} catch (IOException e) {
 				Log.e(TAG, "listen() failed", e);
@@ -397,13 +396,10 @@ public class BluetoothChatService {
 			// given BluetoothDevice
 			Method m = null;
 			try {
-				m = mmDevice.getClass().getMethod("createRfcommSocket", new Class[]{int.class});
-				tmp = (BluetoothSocket) m.invoke(mmDevice, 1);
-			} catch (NoSuchMethodException e) {
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
+//				m = mmDevice.getClass().getMethod("createRfcommSocket", new Class[]{int.class});
+//				tmp = (BluetoothSocket) m.invoke(mmDevice, 1);
+				tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
+			}catch (IOException e) {
 				e.printStackTrace();
 			}
 			mmSocket = tmp;
@@ -492,7 +488,7 @@ public class BluetoothChatService {
 	        // Keep listening to the InputStream until an exception occurs
 	            try {
 	                // Read from the InputStream 
-//	                bytes = mmInStream.read(buffer);
+	                bytes = mmInputStream.read(buffer);
 //					final StringBuffer sb = new StringBuffer();
 //					if (bytes > 0) {
 //						byte[] packetBytes = new byte[bytes];
@@ -508,26 +504,9 @@ public class BluetoothChatService {
 //						}
 //					}
 //					byte[] encodedBytes = new byte[readBufferPosition];
-					int readBufferPosition = 0;
-					byte[] readBuffer = new byte[1024];
-				int bytesAvailable = mmInputStream.available();
-				final StringBuffer sb = new StringBuffer();
-				if (bytesAvailable > 0) {
-					byte[] packetBytes = new byte[bytesAvailable];
-					mmInputStream.read(packetBytes);
-					for (int i = 0; i < bytesAvailable; i++) {
-						byte b = packetBytes[i];
-						readBuffer[readBufferPosition++] = b;
-						byte[] encodedBytes = new byte[readBufferPosition];
-						System.arraycopy(readBuffer, 0, encodedBytes, 0, encodedBytes.length);
-						final String data = new String(encodedBytes, "US-ASCII");
-						readBufferPosition = 0;
-						sb.append(data);
-					}
-				}
-				String data = sb.toString();
+					int bytesAvailable = mmInputStream.available();
 	                // Send the obtained bytes to the UI activity
-				if(callBack!=null) {
+				if(callBack!=null && bytesAvailable>0) {
 						callBack.receiveMicrochip(buffer);
 					}
 	            } catch (IOException e) {

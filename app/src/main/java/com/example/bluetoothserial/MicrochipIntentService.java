@@ -11,6 +11,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 
@@ -34,7 +35,7 @@ public class MicrochipIntentService extends IntentService {
 			final String action = intent.getAction();
 			btChat = setupMicrochipScanner();
 			if(btChat!=null){
-				Toast.makeText(this.getApplicationContext(), "Connected", Toast.LENGTH_LONG);
+				Toast.makeText(this.getApplicationContext(), "Connected", Toast.LENGTH_LONG).show();
 			}
 		}
 	}
@@ -81,11 +82,8 @@ public class MicrochipIntentService extends IntentService {
 
 	String data;
 	public void receiveMicrochip(byte[] buffer) {
-		try {
-			data = new String(buffer, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
+		data = new String(buffer, StandardCharsets.UTF_8);
+
 		Log.d(TAG ,"Microchip: "+data);
 		//Check if in animal ticket screen
 		ActivityManager am = (ActivityManager) this.getSystemService(ACTIVITY_SERVICE);
