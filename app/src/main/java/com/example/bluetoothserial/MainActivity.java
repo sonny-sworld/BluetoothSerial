@@ -5,13 +5,10 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,7 +25,6 @@ import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.Inflater;
 
 /**
  * @author sgao
@@ -45,6 +41,7 @@ public class MainActivity extends Activity
     InputStream mmInputStream;
     volatile boolean stopWorker;
     openBluetooth ob;
+    UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
@@ -157,8 +154,6 @@ public class MainActivity extends Activity
     }
 
     void openBt() {
-        //Standard SerialPortService ID
-        UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
         try {
             mmSocket = mmDevice.createRfcommSocketToServiceRecord(uuid);
             mmSocket.connect();
@@ -173,14 +168,17 @@ public class MainActivity extends Activity
             return;
         }
         beginListenForData();
-
-        myLabel.setText("Bluetooth Opened");
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                myLabel.setText("Bluetooth Opened");
+            }
+        });
     }
     Handler handler = new Handler();
 
     ScheduledExecutorService executorService;
     void beginListenForData() {
-//        stopWorker = false;
         executorService = new ScheduledThreadPoolExecutor(1, new BasicThreadFactory.Builder().namingPattern("schedule-pool-%d").daemon(true).build());
         executorService.scheduleWithFixedDelay(new Runnable() {
             @Override
@@ -225,7 +223,6 @@ public class MainActivity extends Activity
     }
 
     void closeBt() throws IOException {
-//        stopWorker = true;
         if (mmOutputStream != null) {
             mmOutputStream.close();
         }
@@ -241,7 +238,6 @@ public class MainActivity extends Activity
             executorService = null;
         }
 
-//        this.stopService(new Intent(this, BluetoothChatService.class));
         mmInputStream = null;
         mmSocket = null;
         mBluetoothAdapter = null;
